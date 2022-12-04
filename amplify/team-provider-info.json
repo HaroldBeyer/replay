@@ -1,0 +1,15 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-posgrad-staging-184120-authRole",
+      "UnauthRoleArn": "arn:aws:iam::529198180535:role/amplify-posgrad-staging-184120-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::529198180535:role/amplify-posgrad-staging-184120-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-posgrad-staging-184120-deployment",
+      "UnauthRoleName": "amplify-posgrad-staging-184120-unauthRole",
+      "StackName": "amplify-posgrad-staging-184120",
+      "StackId": "arn:aws:cloudformation:us-east-1:529198180535:stack/amplify-posgrad-staging-184120/14963880-733a-11ed-9922-12c8a5dfee67",
+      "AmplifyAppId": "d1htsqu1naya9a"
+    }
+  }
+}
