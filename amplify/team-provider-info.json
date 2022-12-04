@@ -10,6 +10,11 @@
       "StackName": "amplify-posgrad-staging-184120",
       "StackId": "arn:aws:cloudformation:us-east-1:529198180535:stack/amplify-posgrad-staging-184120/14963880-733a-11ed-9922-12c8a5dfee67",
       "AmplifyAppId": "d1htsqu1naya9a"
+    },
+    "categories": {
+      "auth": {
+        "posgrad11e051ea": {}
+      }
     }
   }
 }
