@@ -1,11 +1,39 @@
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'dart:developer';
 
-class MainPage extends StatelessWidget {
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:flutter/material.dart';
+
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  AuthUser? authUser;
+
+  @override
+  void initState() {
+    _getAmplifyUser();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      body: Container(
+        child: Text(authUser?.username ?? ''),
+      ),
+    );
+  }
+
+  Future<void> _getAmplifyUser() async {
+    final auxAuthUser = await Amplify.Auth.getCurrentUser();
+    log(auxAuthUser.toString());
+    authUser = auxAuthUser;
+    // setState(() {
+    //   authUser = auxAuthUser;
+    // });
   }
 }
