@@ -18,6 +18,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late SharedPreferences sp;
 
+  bool hasLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -27,18 +29,22 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     checkIfLogged(context);
-    return FlutterLogin(
-      onLogin: onSignIn,
-      onRecoverPassword: onMock,
-      title: 'Replay',
-      onSignup: onSignUp,
-      onConfirmSignup: onConfirmSignUp,
-      onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => MainPage(),
-        ));
-      },
-    );
+    return hasLoaded
+        ? FlutterLogin(
+            onLogin: onSignIn,
+            onRecoverPassword: onMock,
+            title: 'Replay',
+            onSignup: onSignUp,
+            onConfirmSignup: onConfirmSignUp,
+            onSubmitAnimationCompleted: () {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => MainPage(),
+              ));
+            },
+            navigateBackAfterRecovery: true,
+            loginAfterSignUp: false,
+          )
+        : CircularProgressIndicator(backgroundColor: Colors.amber);
   }
 
   Future<String?> onMock(data) {
@@ -49,13 +55,14 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final result = await Amplify.Auth.signIn(
           username: loginData.name, password: loginData.password);
+      log('successfull login');
       log(result.toString());
       final user = await Amplify.Auth.getCurrentUser();
       await sp.setString('user', user.userId);
       return null;
     } catch (e) {
       log('pifed');
-      rethrow;
+      return 'error when trying to login';
     }
   }
 
@@ -65,8 +72,9 @@ class _LoginPageState extends State<LoginPage> {
       await Amplify.Auth.confirmSignUp(
           username: loginData.name, confirmationCode: confirmationCode);
       return null;
-    } on Exception {
-      rethrow;
+    } catch (e) {
+      log('error: ' + e.toString());
+      return e as String;
     }
   }
 
@@ -74,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       if (signupData.password == null && signupData.name == null) {
         log('no signup data has been passed on!');
-        throw Exception();
+        return 'no sign up data has been passed';
       }
       final CognitoSignUpOptions options = CognitoSignUpOptions(
           userAttributes: {
@@ -88,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
       return null;
     } on Exception {
       log('pifed');
-      rethrow;
+      return 'pifed';
     }
   }
 
@@ -106,8 +114,13 @@ class _LoginPageState extends State<LoginPage> {
 
       final test = await Amplify.Auth.getCurrentUser();
       await sp.setString('user', test.userId);
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => MainPage()));
     } catch (e) {
       log('no aws user found! continuing' + e.toString());
+      setState(() {
+        hasLoaded = true;
+      });
     }
   }
 }
