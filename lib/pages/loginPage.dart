@@ -20,15 +20,17 @@ class _LoginPageState extends State<LoginPage> {
 
   bool hasLoaded = false;
 
+  late String userId;
+  late String userName;
+
   @override
   void initState() {
     super.initState();
-    _configureAmplify();
+    checkIfLogged(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    checkIfLogged(context);
     return hasLoaded
         ? FlutterLogin(
             onLogin: onSignIn,
@@ -38,11 +40,14 @@ class _LoginPageState extends State<LoginPage> {
             onConfirmSignup: onConfirmSignUp,
             onSubmitAnimationCompleted: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => MainPage(),
+                builder: (context) => MainPage(
+                  userId: userId,
+                  userName: userName,
+                ),
               ));
             },
             navigateBackAfterRecovery: true,
-            loginAfterSignUp: false,
+            loginAfterSignUp: true,
           )
         : CircularProgressIndicator(backgroundColor: Colors.amber);
   }
@@ -59,6 +64,8 @@ class _LoginPageState extends State<LoginPage> {
       log(result.toString());
       final user = await Amplify.Auth.getCurrentUser();
       await sp.setString('user', user.userId);
+      userId = user.userId;
+      userName = user.username;
       return null;
     } catch (e) {
       log('pifed');
@@ -106,16 +113,29 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void checkIfLogged(BuildContext context) async {
+    await _configureAmplify();
+    sp = await SharedPreferences.getInstance();
     try {
       if (sp.getString('user') != null) {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MainPage()));
+            context,
+            MaterialPageRoute(
+                builder: (context) => MainPage(
+                      userId: userId,
+                      userName: userName,
+                    )));
       }
-
-      final test = await Amplify.Auth.getCurrentUser();
-      await sp.setString('user', test.userId);
+      final user = await Amplify.Auth.getCurrentUser();
+      await sp.setString('user', user.userId);
+      userId = user.userId;
+      userName = user.username;
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MainPage()));
+          context,
+          MaterialPageRoute(
+              builder: (context) => MainPage(
+                    userId: userId,
+                    userName: userName,
+                  )));
     } catch (e) {
       log('no aws user found! continuing' + e.toString());
       setState(() {
