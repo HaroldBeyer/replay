@@ -116,19 +116,22 @@ class _LoginPageState extends State<LoginPage> {
     await _configureAmplify();
     sp = await SharedPreferences.getInstance();
     try {
-      if (sp.getString('user') != null) {
+      String? spUserId = sp.getString('userId');
+      String? spUserName = sp.getString('userName');
+      if (spUserId != null && spUserName != null) {
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => MainPage(
-                      userId: userId,
-                      userName: userName,
+                      userId: spUserId,
+                      userName: spUserId,
                     )));
       }
       final user = await Amplify.Auth.getCurrentUser();
-      await sp.setString('user', user.userId);
       userId = user.userId;
       userName = user.username;
+      await sp.setString('userId', userId);
+      await sp.setString('userName', userName);
       Navigator.push(
           context,
           MaterialPageRoute(
