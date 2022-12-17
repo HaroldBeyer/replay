@@ -5,6 +5,8 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:replay/amplifyconfiguration.dart';
+import 'package:replay/functions/userDataFunctions.dart';
+import 'package:replay/interfaces/authSession.interface.dart';
 import 'package:replay/pages/mainPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,12 +18,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late SharedPreferences sp;
-
   bool hasLoaded = false;
 
   late String userId;
   late String userName;
+  late String accessToken;
+  late String refreshToken;
+  UserDataFunctions userDataFunctions = UserDataFunctions();
 
   @override
   void initState() {
@@ -40,10 +43,7 @@ class _LoginPageState extends State<LoginPage> {
             onConfirmSignup: onConfirmSignUp,
             onSubmitAnimationCompleted: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => MainPage(
-                  userId: userId,
-                  userName: userName,
-                ),
+                builder: (context) => MainPage(),
               ));
             },
             navigateBackAfterRecovery: true,
@@ -63,9 +63,15 @@ class _LoginPageState extends State<LoginPage> {
       log('successfull login');
       log(result.toString());
       final user = await Amplify.Auth.getCurrentUser();
-      await sp.setString('user', user.userId);
+      final authSession = await Amplify.Auth.fetchAuthSession(
+              options: CognitoSessionOptions(getAWSCredentials: true))
+          as AuthSessionInterface;
       userId = user.userId;
       userName = user.username;
+      refreshToken = authSession.userPoolTokens.refreshToken;
+      accessToken = authSession.userPoolTokens.accessToken;
+      await userDataFunctions
+          .saveUserData(data: {userId, userName, refreshToken, accessToken});
       return null;
     } catch (e) {
       log('pifed');
@@ -114,31 +120,25 @@ class _LoginPageState extends State<LoginPage> {
 
   void checkIfLogged(BuildContext context) async {
     await _configureAmplify();
-    sp = await SharedPreferences.getInstance();
     try {
-      String? spUserId = sp.getString('userId');
-      String? spUserName = sp.getString('userName');
-      if (spUserId != null && spUserName != null) {
+      if (await userDataFunctions.hasUserData()) {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MainPage(
-                      userId: spUserId,
-                      userName: spUserId,
-                    )));
+            context, MaterialPageRoute(builder: (context) => MainPage()));
       }
       final user = await Amplify.Auth.getCurrentUser();
+      log("user: " + user.toString());
+      log("hashcode: " + user.hashCode.toString());
+      final authSession = await Amplify.Auth.fetchAuthSession(
+              options: CognitoSessionOptions(getAWSCredentials: true))
+          as AuthSessionInterface;
       userId = user.userId;
       userName = user.username;
-      await sp.setString('userId', userId);
-      await sp.setString('userName', userName);
+      accessToken = authSession.userPoolTokens.accessToken;
+      refreshToken = authSession.userPoolTokens.refreshToken;
+      await userDataFunctions
+          .saveUserData(data: {userName, userId, accessToken, refreshToken});
       Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MainPage(
-                    userId: userId,
-                    userName: userName,
-                  )));
+          context, MaterialPageRoute(builder: (context) => MainPage()));
     } catch (e) {
       log('no aws user found! continuing' + e.toString());
       setState(() {

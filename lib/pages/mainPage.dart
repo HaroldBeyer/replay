@@ -2,19 +2,23 @@ import 'dart:developer';
 
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:replay/functions/userDataFunctions.dart';
+import 'package:replay/interfaces/userData.interrface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
-  final String? userId;
-  final String? userName;
-  const MainPage({super.key, this.userId, this.userName});
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  late String? userId;
-  late String? userName;
+  late String userId;
+  late String userName;
+  late String accessToken;
+  late String refreshToken;
+  UserDataFunctions userDataFunctions = UserDataFunctions();
   bool loaded = false;
   @override
   void initState() {
@@ -29,19 +33,22 @@ class _MainPageState extends State<MainPage> {
             body: Container(
               child: Text(userName ?? ''),
             ),
+            backgroundColor: Colors.blueAccent,
+            drawer: Drawer(
+              child: ListView(),
+            ),
           )
         : CircularProgressIndicator(backgroundColor: Colors.amber);
   }
 
   Future<void> _getAmplifyUser() async {
-    if (this.widget.userId == null && this.widget.userName == null) {
-      final auxAuthUser = await Amplify.Auth.getCurrentUser();
-      log(auxAuthUser.toString());
-      userId = auxAuthUser.userId;
-      userName = auxAuthUser.username;
-    }
-    userId = widget.userId;
-    userName = widget.userName;
+    UserDataInterface userDataInterface =
+        await userDataFunctions.fetchUserData();
+    userId = userDataInterface.userId;
+    userName = userDataInterface.userName;
+    refreshToken = userDataInterface.refreshToken;
+    accessToken = userDataInterface.accessToken;
+
     setState(() {
       loaded = true;
     });
