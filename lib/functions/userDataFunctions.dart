@@ -3,7 +3,7 @@ import 'package:replay/interfaces/userData.interrface.dart'
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDataFunctions {
-  late SharedPreferences? sp;
+  SharedPreferences? sp;
 
   Future<SharedPreferences> fetchSharedPreferences() async {
     if (sp != null) {
@@ -52,7 +52,7 @@ class UserDataFunctions {
     throw Error();
   }
 
-  Future<void> saveUserData({data = UserDataInterface}) async {
+  Future<void> saveUserData(UserDataInterface data) async {
     SharedPreferences shp = await fetchSharedPreferences();
     await shp.setString('userId', data.userId);
     await shp.setString('userName', data.userName);

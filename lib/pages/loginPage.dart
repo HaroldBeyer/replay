@@ -7,6 +7,7 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:replay/amplifyconfiguration.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/authSession.interface.dart';
+import 'package:replay/interfaces/userData.interrface.dart';
 import 'package:replay/pages/mainPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,17 +65,21 @@ class _LoginPageState extends State<LoginPage> {
       log(result.toString());
       final user = await Amplify.Auth.getCurrentUser();
       final authSession = await Amplify.Auth.fetchAuthSession(
-              options: CognitoSessionOptions(getAWSCredentials: true))
-          as AuthSessionInterface;
+          options: CognitoSessionOptions(getAWSCredentials: true));
       userId = user.userId;
       userName = user.username;
-      refreshToken = authSession.userPoolTokens.refreshToken;
-      accessToken = authSession.userPoolTokens.accessToken;
-      await userDataFunctions
-          .saveUserData(data: {userId, userName, refreshToken, accessToken});
+      refreshToken = (authSession as CognitoAuthSession)
+          .userPoolTokens
+          ?.refreshToken as String;
+      accessToken = (authSession as CognitoAuthSession)
+          .userPoolTokens
+          ?.accessToken as String;
+      await userDataFunctions.saveUserData(
+          UserDataInterface(accessToken, refreshToken, userName, userId));
       return null;
     } catch (e) {
       log('pifed');
+      await Amplify.Auth.signOut();
       return 'error when trying to login';
     }
   }
@@ -82,8 +87,17 @@ class _LoginPageState extends State<LoginPage> {
   Future<String?> onConfirmSignUp(
       String confirmationCode, LoginData loginData) async {
     try {
-      await Amplify.Auth.confirmSignUp(
+      final user = await Amplify.Auth.confirmSignUp(
           username: loginData.name, confirmationCode: confirmationCode);
+      final authSession = await Amplify.Auth.fetchAuthSession(
+              options: CognitoSessionOptions(getAWSCredentials: true))
+          as AuthSessionInterface;
+      // userId = user.userId;
+      // userName = user.username;
+      accessToken = authSession.userPoolTokens.accessToken;
+      refreshToken = authSession.userPoolTokens.refreshToken;
+      await userDataFunctions.saveUserData(
+          UserDataInterface(accessToken, refreshToken, userName, userId));
       return null;
     } catch (e) {
       log('error: ' + e.toString());
@@ -129,14 +143,17 @@ class _LoginPageState extends State<LoginPage> {
       log("user: " + user.toString());
       log("hashcode: " + user.hashCode.toString());
       final authSession = await Amplify.Auth.fetchAuthSession(
-              options: CognitoSessionOptions(getAWSCredentials: true))
-          as AuthSessionInterface;
+          options: CognitoSessionOptions(getAWSCredentials: true));
       userId = user.userId;
       userName = user.username;
-      accessToken = authSession.userPoolTokens.accessToken;
-      refreshToken = authSession.userPoolTokens.refreshToken;
-      await userDataFunctions
-          .saveUserData(data: {userName, userId, accessToken, refreshToken});
+      refreshToken = (authSession as CognitoAuthSession)
+          .userPoolTokens
+          ?.refreshToken as String;
+      accessToken = (authSession as CognitoAuthSession)
+          .userPoolTokens
+          ?.accessToken as String;
+      await userDataFunctions.saveUserData(
+          UserDataInterface(accessToken, refreshToken, userName, userId));
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => MainPage()));
     } catch (e) {

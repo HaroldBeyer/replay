@@ -1,10 +1,7 @@
 import 'dart:developer';
-
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -30,12 +27,34 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return loaded
         ? Scaffold(
+            appBar: AppBar(),
             body: Container(
-              child: Text(userName ?? ''),
+              child: Text(userName),
             ),
             backgroundColor: Colors.blueAccent,
-            drawer: Drawer(
-              child: ListView(),
+            endDrawer: Drawer(
+              child: ListView(
+                children: [
+                  ListTile(
+                    onTap: () => {log('TOUCHED GAMES')},
+                    leading: Icon(Icons.games),
+                    title: Text('view games'),
+                  ),
+                  ListTile(
+                    onTap: () => {log('TOUCHED ADD')},
+                    leading: Icon(Icons.add),
+                    title: Text('add game'),
+                  ),
+                  ListTile(
+                    onTap: () => {log('TOUCHED ALT ROUNDEDS')},
+                    leading: Icon(Icons.list_alt_rounded),
+                    title: Text('view lists'),
+                  )
+                ],
+                primary: false,
+              ),
+              backgroundColor: Colors.amber,
+              width: 2000,
             ),
           )
         : CircularProgressIndicator(backgroundColor: Colors.amber);
