@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:replay/interfaces/game.interface.dart';
 
 class UserService {
   String url = dotenv.env['BACKEND_URL'] as String;
@@ -30,9 +31,18 @@ class UserService {
   }
 
   Future<void> postGame(String name, String genre) async {
-    Response response = await http.post(Uri.parse(url + '/games'),
-        body: {name, genre}, headers: {'Authorization': refreshToken});
-    log("Response: " + response.toString());
+    try {
+      Response response = await http.post(Uri.parse(url + '/games'),
+          body: jsonEncode({'name': name, 'genre': genre}),
+          headers: <String, String>{
+            'Authorization': accessToken,
+            'Content-Type': 'application/json; charset=UTF-8'
+          });
+      log("Response: " + response.toString());
+    } catch (e) {
+      log("error: " + e.toString());
+      rethrow;
+    }
   }
 
   Future<void> postGameRating(
@@ -55,10 +65,24 @@ class UserService {
     log("Response: " + response.toString());
   }
 
-  Future<void> getGames() async {
-    Response response = await http.get(Uri.parse(url + '/games'),
-        headers: {'Authorization': refreshToken});
-    log("Response: " + response.toString());
+  Future<List<GameInterface>> getGames() async {
+    try {
+      Response response = await http.get(Uri.parse(url + '/games'),
+          headers: <String, String>{
+            'Authorization': accessToken,
+            'Content-Type': 'application/json; charset=UTF-8'
+          });
+      log("Response: " + response.toString());
+      final decodedBody = jsonDecode(response.body);
+      log("decoded body: " + decodedBody.toString());
+      final List<GameInterface> result =
+          fetchGameInterfaceFromJson(decodedBody);
+
+      return result;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   Future<void> getGameLists(String userId) async {

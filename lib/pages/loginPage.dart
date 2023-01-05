@@ -5,11 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:replay/amplifyconfiguration.dart';
 import 'package:replay/functions/userDataFunctions.dart';
-import 'package:replay/interfaces/authSession.interface.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
 import 'package:replay/pages/mainPage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:replay/services/user.service.dart';
+import 'package:replay/services/userService/user.service.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});

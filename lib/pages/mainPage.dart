@@ -3,6 +3,8 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
+import 'package:replay/pages/addGamesPage.dart';
+import 'package:replay/pages/gamesPage.dart';
 import 'package:replay/pages/loginPage.dart';
 
 class MainPage extends StatefulWidget {
@@ -38,12 +40,20 @@ class _MainPageState extends State<MainPage> {
               child: ListView(
                 children: [
                   ListTile(
-                    onTap: () => {log('TOUCHED GAMES')},
+                    onTap: () => {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => GamesPage()))
+                    },
                     leading: Icon(Icons.games),
                     title: Text('view games'),
                   ),
                   ListTile(
-                    onTap: () => {log('TOUCHED ADD')},
+                    onTap: () => {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddGamesPagew()))
+                    },
                     leading: Icon(Icons.add),
                     title: Text('add game'),
                   ),
