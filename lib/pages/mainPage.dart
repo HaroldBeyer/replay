@@ -1,7 +1,9 @@
 import 'dart:developer';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
+import 'package:replay/pages/loginPage.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -49,7 +51,12 @@ class _MainPageState extends State<MainPage> {
                     onTap: () => {log('TOUCHED ALT ROUNDEDS')},
                     leading: Icon(Icons.list_alt_rounded),
                     title: Text('view lists'),
-                  )
+                  ),
+                  ListTile(
+                    onTap: () => {logout()},
+                    leading: Icon(Icons.logout),
+                    title: Text('logout'),
+                  ),
                 ],
                 primary: false,
               ),
@@ -71,5 +78,12 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       loaded = true;
     });
+  }
+
+  Future<void> logout() async {
+    await Amplify.Auth.signOut();
+    userDataFunctions.deleteUserData();
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) => LoginPage()));
   }
 }

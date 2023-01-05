@@ -59,4 +59,12 @@ class UserDataFunctions {
     await shp.setString('accessToken', data.accessToken);
     await shp.setString('refreshToken', data.refreshToken);
   }
+
+  Future<void> deleteUserData() async {
+    SharedPreferences shp = await fetchSharedPreferences();
+    await shp.remove('userId');
+    await shp.remove('userName');
+    await shp.remove('accessToken');
+    await shp.remove('refreshToken');
+  }
 }

@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,8 @@ import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/authSession.interface.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
 import 'package:replay/pages/mainPage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:replay/services/user.service.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -26,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   late String accessToken;
   late String refreshToken;
   UserDataFunctions userDataFunctions = UserDataFunctions();
+  bool hasSignUp = false;
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
               ));
             },
             navigateBackAfterRecovery: true,
-            loginAfterSignUp: true,
+            loginAfterSignUp: false,
           )
         : CircularProgressIndicator(backgroundColor: Colors.amber);
   }
@@ -76,6 +77,9 @@ class _LoginPageState extends State<LoginPage> {
           ?.accessToken as String;
       await userDataFunctions.saveUserData(
           UserDataInterface(accessToken, refreshToken, userName, userId));
+      if (hasSignUp) {
+        await saveUserIntoDb();
+      }
       return null;
     } catch (e) {
       log('pifed');
@@ -89,19 +93,21 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final user = await Amplify.Auth.confirmSignUp(
           username: loginData.name, confirmationCode: confirmationCode);
-      final authSession = await Amplify.Auth.fetchAuthSession(
-              options: CognitoSessionOptions(getAWSCredentials: true))
-          as AuthSessionInterface;
-      // userId = user.userId;
-      // userName = user.username;
-      accessToken = authSession.userPoolTokens.accessToken;
-      refreshToken = authSession.userPoolTokens.refreshToken;
-      await userDataFunctions.saveUserData(
-          UserDataInterface(accessToken, refreshToken, userName, userId));
+      hasSignUp = true;
+      // final authSession = await Amplify.Auth.fetchAuthSession(
+      //         options: CognitoSessionOptions(getAWSCredentials: true))
+      //     as AuthSessionInterface;
+      // accessToken = authSession.userPoolTokens.accessToken;
+      // refreshToken = authSession.userPoolTokens.refreshToken;
+      // // userId = userLogged.userId;
+      // // userName = userLogged.username;
+      // await userDataFunctions.saveUserData(
+      //     UserDataInterface(accessToken, refreshToken, userName, userId));
+      // await saveUserIntoDb();
       return null;
     } catch (e) {
       log('error: ' + e.toString());
-      return e as String;
+      rethrow;
     }
   }
 
@@ -127,13 +133,22 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> saveUserIntoDb() async {
+    final userService =
+        new UserService(accessToken, refreshToken, userId, userName);
+    final userSavedResult = await userService.postUser(userId, userName);
+  }
+
   Future<void> _configureAmplify() async {
-    await Amplify.addPlugins([AmplifyAuthCognito()]);
-    await Amplify.configure(amplifyconfig);
+    if (!Amplify.isConfigured) {
+      await Amplify.addPlugins([AmplifyAuthCognito()]);
+      await Amplify.configure(amplifyconfig);
+    }
   }
 
   void checkIfLogged(BuildContext context) async {
     await _configureAmplify();
+    await dotenv.load();
     try {
       if (await userDataFunctions.hasUserData()) {
         Navigator.push(
