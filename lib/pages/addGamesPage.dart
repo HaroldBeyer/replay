@@ -4,6 +4,8 @@ import 'package:replay/interfaces/game.interface.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
 import 'package:replay/services/userService/user.service.dart';
 
+import 'mainPage.dart';
+
 class AddGamesPagew extends StatefulWidget {
   const AddGamesPagew({super.key});
 
@@ -56,11 +58,31 @@ class _AddGamesPagewState extends State<AddGamesPagew> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Validate will return true if the form is valid, or false if
-                      // the form is invalid.
-                      insertGames();
-                    },
+                    onPressed: () => showDialog(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                              title: const Text('add game'),
+                              actions: [
+                                TextButton(
+                                  child: const Text("yes"),
+                                  onPressed: () async {
+                                    await insertGames();
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const MainPage()));
+                                  },
+                                ),
+                                TextButton(
+                                    onPressed: () =>
+                                        {Navigator.pop(context, 'cancel')},
+                                    child: const Text("no"))
+                              ],
+                              content:
+                                  const Text('do you confirm adding the game?'),
+                            )),
                     child: const Text('Submit'),
                   ),
                 ),

@@ -143,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void moveToMainPage(BuildContext context) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => MainPage()));
+        context, MaterialPageRoute(builder: (context) => const MainPage()));
   }
 
   Future<void> fetchAndSaveUserData(AuthUser user) async {
