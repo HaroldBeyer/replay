@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/game.interface.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
@@ -40,7 +38,7 @@ class _GamesPageState extends State<GamesPage> {
                   Text(gameInterfaceList[index].name)),
             ),
           )
-        : CircularProgressIndicator(
+        : const CircularProgressIndicator(
             backgroundColor: Colors.amber,
           );
   }
@@ -48,7 +46,7 @@ class _GamesPageState extends State<GamesPage> {
   Future<void> getGames() async {
     UserService userService =
         UserService(accessToken, refreshToken, userId, userName);
-    final resultRequest = gameInterfaceList = await userService.getGames();
+    gameInterfaceList = await userService.getGames();
   }
 
   Future<void> initConfig() async {
