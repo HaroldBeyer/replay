@@ -17,64 +17,85 @@ class UserService {
 
   Future<void> postUser(String userId, String userName) async {
     try {
-      Response response = await http.put(Uri.parse(url + '/users'),
+      Response response = await http.put(Uri.parse('$url/users'),
           body: jsonEncode({'userId': userId, 'name': userName}),
           headers: <String, String>{
             'Authorization': accessToken,
             'Content-Type': 'application/json; charset=UTF-8'
           });
-      log("Response: " + response.toString());
+      log("Response: $response");
     } catch (e) {
-      log("error: " + e.toString());
+      log("error: $e");
       rethrow;
     }
   }
 
   Future<void> postGame(String name, String genre) async {
     try {
-      Response response = await http.post(Uri.parse(url + '/games'),
+      await http.post(Uri.parse('$url/games'),
           body: jsonEncode({'name': name, 'genre': genre}),
           headers: <String, String>{
             'Authorization': accessToken,
             'Content-Type': 'application/json; charset=UTF-8'
           });
-      log("Response: " + response.toString());
     } catch (e) {
-      log("error: " + e.toString());
+      log("error: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> updateGameRating(String gameId, int rating) async {
+    try {
+      await http.patch(Uri.parse('$url/games'),
+          body: jsonEncode({"gameId": gameId, "rating": rating}),
+          headers: <String, String>{
+            'Authorization': accessToken,
+            'Content-Type': 'application/json; charset=UTF-8'
+          });
+    } catch (e) {
+      log('error while trying to update game rating: $e');
       rethrow;
     }
   }
 
   Future<void> postGameRating(
       String userId, String gameId, int rating, String comment) async {
-    Response response = await http.post(Uri.parse(url + '/gameRatings'),
-        body: {userId, gameId, rating, comment},
-        headers: {'Authorization': refreshToken});
-    log("Response: " + response.toString());
+    Response response = await http.post(Uri.parse('$url/gameRatings'),
+        body: jsonEncode({
+          "userId": userId,
+          "gameId": gameId,
+          "rating": rating,
+          "comment": comment
+        }),
+        headers: <String, String>{
+          'Authorization': accessToken,
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+    log("Response: $response");
   }
 
   Future<void> postGenre(String name) async {
-    Response response = await http.post(Uri.parse(url + '/genres'),
+    Response response = await http.post(Uri.parse('$url/genres'),
         body: {name}, headers: {'Authorization': refreshToken});
-    log("Response: " + response.toString());
+    log("Response: $response");
   }
 
   Future<void> postGamesList(String userId, List<String> gamesId) async {
-    Response response = await http.put(Uri.parse(url + '/games/list'),
+    Response response = await http.put(Uri.parse('$url/games/list'),
         body: {userId, gamesId}, headers: {'Authorization': refreshToken});
-    log("Response: " + response.toString());
+    log("Response: $response");
   }
 
   Future<List<GameInterface>> getGames() async {
     try {
-      Response response = await http.get(Uri.parse(url + '/games'),
+      Response response = await http.get(Uri.parse('$url/games'),
           headers: <String, String>{
             'Authorization': accessToken,
             'Content-Type': 'application/json; charset=UTF-8'
           });
-      log("Response: " + response.toString());
+      log("Response: $response");
       final decodedBody = jsonDecode(response.body);
-      log("decoded body: " + decodedBody.toString());
+      log("decoded body: $decodedBody");
       final List<GameInterface> result =
           fetchGameInterfaceFromJson(decodedBody);
 
@@ -87,9 +108,9 @@ class UserService {
 
   Future<void> getGameLists(String userId) async {
     Response response = await http.get(
-      Uri.parse(url + '/games/list'),
+      Uri.parse('$url/games/list'),
       headers: {'Authorization': refreshToken},
     );
-    log("Response: " + response.toString());
+    log("Response: $response");
   }
 }

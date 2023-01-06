@@ -30,13 +30,29 @@ class _GamesPageState extends State<GamesPage> {
   Widget build(BuildContext context) {
     return loaded
         ? Scaffold(
-            appBar: AppBar(),
-            backgroundColor: Colors.blueAccent,
-            body: ListView.builder(
-              itemCount: gameInterfaceList.length,
-              itemBuilder: ((context, index) =>
-                  Text(gameInterfaceList[index].name)),
+            appBar: AppBar(
+              title: const Text('Games'),
             ),
+            backgroundColor: Colors.lightBlue,
+            body: ListView.builder(
+                itemCount: gameInterfaceList.length,
+                itemBuilder: ((context, index) => Row(
+                      children: [
+                        const Icon(Icons.games),
+                        const Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                        ),
+                        Text(gameInterfaceList[index].name),
+                        const Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                        ),
+                        Text('likes: ${gameInterfaceList[index].rating}'),
+                        IconButton(
+                            onPressed: () =>
+                                {likeGame(gameInterfaceList[index], index)},
+                            icon: const Icon(Icons.add))
+                      ],
+                    ))),
           )
         : const CircularProgressIndicator(
             backgroundColor: Colors.amber,
@@ -47,6 +63,15 @@ class _GamesPageState extends State<GamesPage> {
     UserService userService =
         UserService(accessToken, refreshToken, userId, userName);
     gameInterfaceList = await userService.getGames();
+  }
+
+  Future<void> likeGame(GameInterface game, int index) async {
+    UserService userService =
+        UserService(accessToken, refreshToken, userId, userName);
+    await userService.updateGameRating(game.id, game.rating);
+    setState(() {
+      gameInterfaceList[index].rating++;
+    });
   }
 
   Future<void> initConfig() async {
