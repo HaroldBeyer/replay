@@ -32,49 +32,49 @@ class _MainPageState extends State<MainPage> {
     return loaded
         ? Scaffold(
             appBar: AppBar(),
-            body: Container(
-              child: Text(userName),
-            ),
+            body: Text(userName),
             backgroundColor: Colors.blueAccent,
             endDrawer: Drawer(
+              backgroundColor: Colors.amber,
+              width: 2000,
               child: ListView(
+                primary: false,
                 children: [
                   ListTile(
                     onTap: () => {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => GamesPage()))
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GamesPage()))
                     },
-                    leading: Icon(Icons.games),
-                    title: Text('view games'),
+                    leading: const Icon(Icons.games),
+                    title: const Text('view games'),
                   ),
                   ListTile(
                     onTap: () => {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => AddGamesPagew()))
+                              builder: (context) => const AddGamesPagew()))
                     },
-                    leading: Icon(Icons.add),
-                    title: Text('add game'),
+                    leading: const Icon(Icons.add),
+                    title: const Text('add game'),
                   ),
                   ListTile(
                     onTap: () => {log('TOUCHED ALT ROUNDEDS')},
-                    leading: Icon(Icons.list_alt_rounded),
-                    title: Text('view lists'),
+                    leading: const Icon(Icons.list_alt_rounded),
+                    title: const Text('view lists'),
                   ),
                   ListTile(
                     onTap: () => {logout()},
-                    leading: Icon(Icons.logout),
-                    title: Text('logout'),
+                    leading: const Icon(Icons.logout),
+                    title: const Text('logout'),
                   ),
                 ],
-                primary: false,
               ),
-              backgroundColor: Colors.amber,
-              width: 2000,
             ),
           )
-        : CircularProgressIndicator(backgroundColor: Colors.amber);
+        : const CircularProgressIndicator(backgroundColor: Colors.amber);
   }
 
   Future<void> _getAmplifyUser() async {
@@ -93,6 +93,7 @@ class _MainPageState extends State<MainPage> {
   Future<void> logout() async {
     await Amplify.Auth.signOut();
     userDataFunctions.deleteUserData();
+    // ignore: use_build_context_synchronously
     Navigator.of(context)
         .pushReplacement(MaterialPageRoute(builder: (context) => LoginPage()));
   }
