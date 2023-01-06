@@ -43,14 +43,12 @@ class _LoginPageState extends State<LoginPage> {
             onSignup: onSignUp,
             onConfirmSignup: onConfirmSignUp,
             onSubmitAnimationCompleted: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => MainPage(),
-              ));
+              moveToMainPage(context);
             },
             navigateBackAfterRecovery: true,
             loginAfterSignUp: false,
           )
-        : CircularProgressIndicator(backgroundColor: Colors.amber);
+        : const CircularProgressIndicator(backgroundColor: Colors.amber);
   }
 
   Future<String?> onMock(data) {
@@ -59,29 +57,17 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<String?> onSignIn(LoginData loginData) async {
     try {
-      final result = await Amplify.Auth.signIn(
+      await Amplify.Auth.signIn(
           username: loginData.name, password: loginData.password);
       log('successfull login');
-      log(result.toString());
       final user = await Amplify.Auth.getCurrentUser();
-      final authSession = await Amplify.Auth.fetchAuthSession(
-          options: CognitoSessionOptions(getAWSCredentials: true));
-      userId = user.userId;
-      userName = user.username;
-      refreshToken = (authSession as CognitoAuthSession)
-          .userPoolTokens
-          ?.refreshToken as String;
-      accessToken = (authSession as CognitoAuthSession)
-          .userPoolTokens
-          ?.accessToken as String;
-      await userDataFunctions.saveUserData(
-          UserDataInterface(accessToken, refreshToken, userName, userId));
+      await fetchAndSaveUserData(user);
       if (hasSignUp) {
         await saveUserIntoDb();
       }
       return null;
     } catch (e) {
-      log('pifed');
+      log('error when trying to login');
       await Amplify.Auth.signOut();
       return 'error when trying to login';
     }
@@ -90,22 +76,12 @@ class _LoginPageState extends State<LoginPage> {
   Future<String?> onConfirmSignUp(
       String confirmationCode, LoginData loginData) async {
     try {
-      final user = await Amplify.Auth.confirmSignUp(
+      await Amplify.Auth.confirmSignUp(
           username: loginData.name, confirmationCode: confirmationCode);
       hasSignUp = true;
-      // final authSession = await Amplify.Auth.fetchAuthSession(
-      //         options: CognitoSessionOptions(getAWSCredentials: true))
-      //     as AuthSessionInterface;
-      // accessToken = authSession.userPoolTokens.accessToken;
-      // refreshToken = authSession.userPoolTokens.refreshToken;
-      // // userId = userLogged.userId;
-      // // userName = userLogged.username;
-      // await userDataFunctions.saveUserData(
-      //     UserDataInterface(accessToken, refreshToken, userName, userId));
-      // await saveUserIntoDb();
       return null;
     } catch (e) {
-      log('error: ' + e.toString());
+      log('error: $e');
       rethrow;
     }
   }
@@ -124,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
           username: signupData.name as String,
           password: signupData.password as String,
           options: options);
-      log('result: ' + result.toString());
+      log('result: $result');
       return null;
     } on Exception {
       log('pifed');
@@ -134,8 +110,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> saveUserIntoDb() async {
     final userService =
-        new UserService(accessToken, refreshToken, userId, userName);
-    final userSavedResult = await userService.postUser(userId, userName);
+        UserService(accessToken, refreshToken, userId, userName);
+    await userService.postUser(userId, userName);
   }
 
   Future<void> _configureAmplify() async {
@@ -150,31 +126,36 @@ class _LoginPageState extends State<LoginPage> {
     await dotenv.load();
     try {
       if (await userDataFunctions.hasUserData()) {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MainPage()));
+        // ignore: use_build_context_synchronously
+        moveToMainPage(context);
       }
       final user = await Amplify.Auth.getCurrentUser();
-      log("user: " + user.toString());
-      log("hashcode: " + user.hashCode.toString());
-      final authSession = await Amplify.Auth.fetchAuthSession(
-          options: CognitoSessionOptions(getAWSCredentials: true));
-      userId = user.userId;
-      userName = user.username;
-      refreshToken = (authSession as CognitoAuthSession)
-          .userPoolTokens
-          ?.refreshToken as String;
-      accessToken = (authSession as CognitoAuthSession)
-          .userPoolTokens
-          ?.accessToken as String;
-      await userDataFunctions.saveUserData(
-          UserDataInterface(accessToken, refreshToken, userName, userId));
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MainPage()));
+      await fetchAndSaveUserData(user);
+      // ignore: use_build_context_synchronously
+      moveToMainPage(context);
     } catch (e) {
-      log('no aws user found! continuing' + e.toString());
+      log('no aws user found! continuing. error: $e');
       setState(() {
         hasLoaded = true;
       });
     }
+  }
+
+  void moveToMainPage(BuildContext context) {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => MainPage()));
+  }
+
+  Future<void> fetchAndSaveUserData(AuthUser user) async {
+    final authSession = await Amplify.Auth.fetchAuthSession(
+        options: CognitoSessionOptions(getAWSCredentials: true));
+    userId = user.userId;
+    userName = user.username;
+    refreshToken = (authSession as CognitoAuthSession)
+        .userPoolTokens
+        ?.refreshToken as String;
+    accessToken = (authSession).userPoolTokens?.accessToken as String;
+    await userDataFunctions.saveUserData(
+        UserDataInterface(accessToken, refreshToken, userName, userId));
   }
 }
