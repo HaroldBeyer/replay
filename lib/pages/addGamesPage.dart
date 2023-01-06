@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:replay/functions/userDataFunctions.dart';
 import 'package:replay/interfaces/game.interface.dart';
 import 'package:replay/interfaces/userData.interrface.dart';
@@ -69,7 +67,7 @@ class _AddGamesPagewState extends State<AddGamesPagew> {
               ],
             )),
           )
-        : CircularProgressIndicator(
+        : const CircularProgressIndicator(
             backgroundColor: Colors.amber,
           );
   }
